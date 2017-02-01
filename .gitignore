@@ -3,7 +3,11 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+#Output
+output/
+
 # Package Files #
+*.class
 *.jar
 *.war
 *.ear
