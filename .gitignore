@@ -4,13 +4,14 @@
 .mtj.tmp/
 
 #Output
-output/
+output_2/
+output_1/
 
 # Package Files #
 *.class
 *.jar
 *.war
 *.ear
-
+*java.save
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*

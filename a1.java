@@ -11,30 +11,61 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class a1 {
-  public static class PairingMapper extends Mapper<Object, Text, Text, IntWritable>{
+  public static class PairingMapper extends Mapper<Object, Text, IntWritable, IntWritable>{
+    private static IntWritable a = new IntWritable();
+    private static IntWritable b = new IntWritable();
     public void map(Object k, Text vs, Context context) throws IOException, InterruptedException{
       String[] values = vs.toString().split("\\s");
       int key = Integer.parseInt(values[0]);
       for(int i = 1; i<values.length; i++){
-        String data = new String(" ");
         int val = Integer.parseInt(values[i]);
-        if(val < 0 && !hasNeg(val,values)){
-          data = key+","+(val*-1);
+        if(val < 0){
+          a.set(key);
+          b.set(val);
+          context.write(a, b);
         }
-        else if(val >0 && hasNeg(val,values)){
-          data = val+","+key;
-        }
-        for(int j = 1; j < values.length; j++){
-          int v = Integer.parseInt(values[j]);
-          if(v > 0)context.write(new Text(data),new IntWritable(v));
+        else{
+          for(int j = i+1; j < values.length; j++){
+            int valb = Integer.parseInt(values[j]);
+            if(valb > 0){
+              a.set(val);
+              b.set(valb);
+              context.write(a,b);
+              context.write(b,a);
+            }
+          }
         }
       }
     }
-    private boolean hasNeg(int val, String[] values){
-      for(int i = 1; i < values.length; i++){
-        if(Integer.parseInt(values[i])*(-1) == val)return true;
+  }
+  public static class PairingReducer extends Reducer<IntWritable, IntWritable, IntWritable, Text>{
+    private static Text data = new Text();
+    public void reduce(IntWritable key, Iterable<IntWritable> value, Context context) throws IOException, InterruptedException{
+      String vals = new String();
+      String list = new String();
+      int sum = -1;
+      for (IntWritable val: value)
+        vals += val.get()+" ";
+      String[] values = vals.toString().split("\\s");
+      for (int i = 0; i < values.length; i++){
+        int a = Integer.parseInt(values[i]);
+        for (int j = 0; j < values.length; j++){
+          int b = Integer.parseInt(values[j]);
+          if (a*-1 == b){
+            a=0;
+            sum=-1;
+          }else if (a==b){
+            sum++;
+          }
+        }
+        if(a!=0 && a>0 && sum > 0){
+          values[i]= Integer.toString(a*-1);
+          list = list+(a+"("+sum+") ");
+          sum = -1;
+        }
       }
-      return false;
+      data.set(list);
+      context.write(key, data);
     }
   }
   public static class IndexMapper extends Mapper<Object, Text, IntWritable, IntWritable>{
@@ -44,12 +75,12 @@ public class a1 {
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException{
       String[] values = value.toString().split("\\s");
       b.set(Integer.parseInt(values[0]));
-      c.set(-1 * Integer.parseInt(values[0]));
       for(int i = 1; i < values.length; i++){
 
-        a.set(Integer.parseInt(values[i]));
+        a.set(Integer.parseInt(values[i])*-1);
+        c.set(Integer.parseInt(values[i]));
         context.write(b, a);
-        context.write(a, c);
+        context.write(c, b);
       }
     }
   }
@@ -60,21 +91,6 @@ public class a1 {
       for (IntWritable val: values){
         list += val.get()+" ";
       }
-      data.set(list);
-      context.write(key, data);
-    }
-  }
-  public static class PairingReducer extends Reducer<Text, IntWritable, Text, Text>{
-    private static Text data = new Text();
-    public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException{
-      String follower = new String();
-      int sum = 0;
-      for (IntWritable val: values){
-        for(IntWritable v:values){
-          if (val.get() == v.get())sum++;
-        }
-      }
-      String list = new String(key.toString()+": "+sum);
       data.set(list);
       context.write(key, data);
     }
@@ -95,7 +111,7 @@ public class a1 {
     job.setJarByClass(a1.class);
     job.setMapperClass(PairingMapper.class);
     job.setReducerClass(PairingReducer.class);
-    job.setOutputKeyClass(Text.class);
+    job.setOutputKeyClass(IntWritable.class);
     job.setOutputValueClass(IntWritable.class);
     FileInputFormat.addInputPath(job, new Path(args[1]+"/part-r-00000"));
     FileOutputFormat.setOutputPath(job, new Path(args[2]));
