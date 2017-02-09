@@ -69,17 +69,17 @@ public class a1 {
     }
     private String sort(String lists){
       String[] values = lists.toString().split("\\s");
-      int low;
+      int max;
       String tmp = new String();
       for (int i =0; i < values.length; i++){
-        low = i;
+        max = i;
         for (int j = i+1; j < values.length; j++){
-          if(getSum(values[j]) < getSum(values[low]))low = j;
+          if(getSum(values[j]) > getSum(values[max]))max = j;
         }
-        if(i !=low){
+        if(i !=max){
           tmp = values[i];
-          values[i] = values[low];
-          values[low] = tmp;
+          values[i] = values[max];
+          values[max] = tmp;
         }
       }
       tmp = "";
