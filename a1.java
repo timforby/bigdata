@@ -43,30 +43,41 @@ public class a1 {
     public void reduce(IntWritable key, Iterable<IntWritable> value, Context context) throws IOException, InterruptedException{
       String vals = new String();
       String list = new String();
-      int sum = -1;
-      for (IntWritable val: value)
+      int sum = 0;
+      for (IntWritable val: value){
         vals += val.get()+" ";
+      }
       String[] values = vals.toString().split("\\s");
       for (int i = 0; i < values.length; i++){
         int a = Integer.parseInt(values[i]);
-        for (int j = 0; j < values.length; j++){
-          int b = Integer.parseInt(values[j]);
-          if (a*-1 == b){
-            a=0;
-            sum=-1;
-          }else if (a==b){
-            sum++;
+        if(a>0){
+          sum = contains(values, a);
+          if(a!=0 && a>0 && sum > 0){
+            values[i]= Integer.toString(a*-1);
+            list = list+(a+"("+sum+") ");
+            sum = 0;
           }
         }
-        if(a!=0 && a>0 && sum > 0){
-          values[i]= Integer.toString(a*-1);
-          list = list+(a+"("+sum+") ");
-          sum = -1;
-        }
+        
       }
+      //data.set(vals);
       data.set(sort(list));
       context.write(key, data);
     }
+    private int contains(String[] values, int a){
+      int sum = 0;
+      for (int j = 0; j < values.length; j++){
+        int b = Integer.parseInt(values[j]);
+        if (a==b){
+          sum++;
+        }
+        else if (a*-1 == b){
+          return 0;
+        }
+      }
+      return sum;
+    }
+
     private String sort(String lists){
       String[] values = lists.toString().split("\\s");
       int max;
@@ -111,7 +122,7 @@ public class a1 {
   public static class IndexReducer extends Reducer<IntWritable, IntWritable, IntWritable, Text>{
     private static Text data = new Text();
     public void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException{
-      String list = new String(key.get()+" ");
+      String list = new String();
       for (IntWritable val: values){
         list += val.get()+" ";
       }
@@ -128,7 +139,7 @@ public class a1 {
     job.setOutputKeyClass(IntWritable.class);
     job.setOutputValueClass(IntWritable.class);
     FileInputFormat.addInputPath(job, new Path(args[0]));
-    FileOutputFormat.setOutputPath(job, new Path(args[1]));
+    FileOutputFormat.setOutputPath(job, new Path("output_map1"));
     if(job.waitForCompletion(true)){
     conf = new Configuration();
     job = Job.getInstance(conf, "a1p2");
@@ -137,8 +148,8 @@ public class a1 {
     job.setReducerClass(PairingReducer.class);
     job.setOutputKeyClass(IntWritable.class);
     job.setOutputValueClass(IntWritable.class);
-    FileInputFormat.addInputPath(job, new Path(args[1]+"/part-r-00000"));
-    FileOutputFormat.setOutputPath(job, new Path(args[2]));
+    FileInputFormat.addInputPath(job, new Path("output_map1"+"/part-r-00000"));
+    FileOutputFormat.setOutputPath(job, new Path(args[1]));
     System.exit(job.waitForCompletion(true) ? 0: 1);
     }
   }

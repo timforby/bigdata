@@ -4,8 +4,8 @@
 .mtj.tmp/
 
 #Output
-output_2/
-output_1/
+output_map1/
+output/
 
 # Package Files #
 *.class
