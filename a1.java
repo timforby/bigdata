@@ -64,8 +64,32 @@ public class a1 {
           sum = -1;
         }
       }
-      data.set(list);
+      data.set(sort(list));
       context.write(key, data);
+    }
+    private String sort(String lists){
+      String[] values = lists.toString().split("\\s");
+      int low;
+      String tmp = new String();
+      for (int i =0; i < values.length; i++){
+        low = i;
+        for (int j = i+1; j < values.length; j++){
+          if(getSum(values[j]) < getSum(values[low]))low = j;
+        }
+        if(i !=low){
+          tmp = values[i];
+          values[i] = values[low];
+          values[low] = tmp;
+        }
+      }
+      tmp = "";
+      for (int i =0; i < values.length; i++){
+        tmp += values[i]+" ";
+      }
+      return tmp;
+    }
+    private int getSum(String a){
+      return Integer.parseInt(a.substring(a.indexOf('(')+1,a.indexOf(')')));
     }
   }
   public static class IndexMapper extends Mapper<Object, Text, IntWritable, IntWritable>{
