@@ -143,4 +143,7 @@ if int(question) == 9:
 		mapping = uniqueuser(us).sortBy(lambda x: x).zipWithIndex().map(lambda x: (x[0],"user-"+str(x[1])))
 		map_bc = sc.broadcast(mapping.collectAsMap())
 		rewrite = us.map(lambda x: replace(x,map_bc.value))
-		print(lineswith(rewrite,"Starting Session").take(2))
+		saveloc = str("data/"+i+"_anonymized")
+		rewrite.saveAsTextFile(saveloc)
+		print(mapping.collect())
+		print(" . Anonymized files: "+saveloc)
