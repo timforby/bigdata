@@ -4,7 +4,7 @@ Timothy Forbes
 26856411
 ## Summary 
 
-Map reduce assignment that inputs a directed social network of x users with a non symetrical follow assignment. The output will recommend a list of users to each user based on the number of followers they have in common.
+Spark assignment consisting in analyzing log files.
 
 ## Requirements
 Python
