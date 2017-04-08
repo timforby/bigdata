@@ -2,6 +2,7 @@ import sys
 import argparse
 from pyspark import SparkContext, SparkConf
 
+# Setting up context
 conf = SparkConf().setAppName("wordcount").setMaster("local")
 sc = SparkContext(conf=conf)
 
@@ -39,14 +40,21 @@ def words(scvar):
 def swap(scvar):
 	swapped = scvar.map(lambda k: (k[1],k[0]))
 	return swapped
-
+#returns only keys
 def getkey(svar):
 	key = svar.map(lambda x: x[0])#cleanup .
 	return key
+
+#replaces keys with values in a string
+def replace(line, dict):
+	for i,j in dict.items():
+		line = line.replace(i, j)
+	return line
+
 #################### QUESTION METHODS #######################
 
-def uniqueuser(i):
-	ans = getkey(count(words((cut(lineswith(readhost(i),"Starting Session"),"of user")))))
+def uniqueuser(scvar):
+	ans = getkey(count(words((cut(lineswith(scvar,"Starting Session"),"of user")))))
 	return ans
 
 
@@ -81,7 +89,7 @@ if int(question) == 3:
 	print("unique user names")
 	for i in hosts:
 		print(" + "+i+": ", end="")
-		ans = uniqueuser(i)
+		ans = uniqueuser(readhost(i))
 		print(ans.collect())
 
 if int(question) == 4:
@@ -106,8 +114,8 @@ if int(question) == 6:
 		print(" + "+i+": ")
 		ans = lineswith(readhost(i),"error").map(lambda x: x[(17+len(str(i))):])
 		ans = swap(count(ans)).sortByKey(False)
-		ans = ans.collect()
-		for a in ans[:5]:
+		ans = ans.take(5)
+		for a in ans:
 			print(a)
 
 if int(question) == 7:
@@ -115,7 +123,7 @@ if int(question) == 7:
 	print(" + : ", end="")
 	fu = sc.emptyRDD()
 	for i in hosts:
-		fu = fu.intersection(uniqueuser(i))
+		fu = fu.intersection(uniqueuser(readhost(i)))
 	print(fu.collect())
 
 if int(question) == 8:
@@ -123,10 +131,16 @@ if int(question) == 8:
 	print(" + : ", end="")
 	fu = sc.emptyRDD()
 	for i in hosts:
-		fu = fu.union(uniqueuser(i).map(lambda x: (x,i)))
+		fu = fu.union(uniqueuser(readhost(i)).map(lambda x: (x,i)))
 	print(fu.reduceByKey(lambda x,y: x+y).filter(lambda x: x[1] in hosts).collect())
 
 if int(question) == 9:
+	print("Host Anonymization")
 	for i in hosts:
-		us = uniqueuser(i)
-		
+		print(" + "+i+": ")
+		print(" . User name mapping: ", end="")
+		us = readhost(i)
+		mapping = uniqueuser(us).sortBy(lambda x: x).zipWithIndex().map(lambda x: (x[0],"user-"+str(x[1])))
+		map_bc = sc.broadcast(mapping.collectAsMap())
+		rewrite = us.map(lambda x: replace(x,map_bc.value))
+		print(lineswith(rewrite,"Starting Session").take(2))
