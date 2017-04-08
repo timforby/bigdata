@@ -7,9 +7,11 @@ Timothy Forbes
 Map reduce assignment that inputs a directed social network of x users with a non symetrical follow assignment. The output will recommend a list of users to each user based on the number of followers they have in common.
 
 ## Requirements
-Hadoop
+Python
 
-Java
+Spark
+
+Hadoop
 
 Correct environment variables
 
@@ -64,7 +66,7 @@ Tree structure would look like so:
 ├── out
 │   ├── part-00000
 │   └── _SUCCESS
-├── README.md
+└── README.md
 ```
 
 ## Execution
@@ -73,4 +75,4 @@ Tree structure would look like so:
 python3 log_analyzer.py -q <qid> <host1> <host2>
 ```
 
-Where <qid> is the question number, <host1> is the first host, and <host2> is the second one.
+Where qid is the question number, host1 is the first host, and host2 is the second one.
