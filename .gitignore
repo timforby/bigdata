@@ -6,6 +6,10 @@
 #Output
 output_map1/
 output/
+out/
+
+#data
+assignment2/data/
 
 # Package Files #
 *.class
