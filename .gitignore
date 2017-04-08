@@ -4,9 +4,9 @@
 .mtj.tmp/
 
 #Output
-output_map1/
-output/
-out/
+assignment1/output_map1/
+assignment1/output/
+assignment1/out/
 
 #data
 assignment2/data/
